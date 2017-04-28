@@ -1,0 +1,43 @@
+\documentclass{report}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{hyperref}
+\usepackage{color}
+
+\hypersetup{
+    colorlinks = true,
+    }
+
+\author{Harish Murali}
+\title{Biofluid mechanics -- Project}
+\begin{document}
+\maketitle
+\newpage
+\section*{The problem and values of constants}
+I simulated the flow through a deformable artery having constant area at zero transmural pressure. I used python to write the CFD code for this. The radius of the artery was taken to be 1 cm. At the inflow a sinusoidal volume flow rate was prescribed with a frequency of 1 rad/s and an amplitude of 22 $cm^3/s$. The value of $\frac{Eh}{r_0}$ was computed from the empirical curve fit and I used the curve parameters given in Olufsen's paper
+\begin{equation}
+	\frac{Eh}{r_0} = k_1exp(k_2r_0) + k_3
+\end{equation}
+where $k_1 = 2.00 \times 10^7 gs^{-2}cm^{-1}$ , $k_2 = -22.53 cm^{-1}$ and $k_3 = 8.65 \times 10^5 gs^{-2}cm^{-1}$
+The pressure outside the artery was assumed to be 0 and the density of blood was taken to a constant at 1 g/cc. Value of kinematic viscosity was taken from the paper which was $\nu = 0.046 cm^2/s$
+\\~\\
+The governing equations in the large artery were
+\begin{equation}
+	\frac{\partial A}{\partial t} + \frac{\partial q}{\partial x} = 0
+\end{equation}
+\begin{equation}
+	\frac{\partial q}{\partial t} + \frac{\partial}{\partial x}(\frac{q^2}{A})+ \frac{A}{\rho}\frac{\partial p}{\partial x} = \frac{-2r\pi\nu q}{\delta A}
+\end{equation}
+
+I used an Forward Time Central Space discretization to solve the problem. However, the scheme was exhibiting instability and the solution blew up after some time. So, I added second and fourth order artificial dissipation which amounted to adding these terms to the equation $\mu_2\frac{\partial^2 u}{\partial x^2}$, $\mu_4\frac{\partial^4 u}{\partial x^4}$. This gave stable solutions and did not change the result by much. The amount of dissipation was determined by trial and error and $\mu_2 = 0.001$ and $\mu_4 = 0.0001$ seemed to give acceptable results
+
+The prescribed boundary conditions are -- volume flow rate at the inflow and the resistance at the outflow. However, the scheme requires 2 boundary conditions at each end. So, I had to extrapolate the cross sectional area at the inlet from within the domain and the flow rate at the outlet from within the domain. This extrapolation can also be seen as the result of outgoing characteristics at the boundaries (There is one incoming and one outgoing characteristic).
+\\~\\
+The prescribed flow rate at the inlet is shown below\\
+\includegraphics[width=\textwidth]{flow_rate}
+\section*{Resistance boundary condition}
+The value of the resistance at the outlet was not mentioned in the paper. So, I chose the approximate resistance from the slope of the pressure - flow rate curve given in the paper. This came out to about 3444.15 $dyn$-$s/cm^5$. The hysteresis curve was plotted as in Olufsen's paper. The results were not identical because of the many differences in procedure -- primarily the flow rate at inlet (I chose sinusoidal inflow while Olufsen used inflow determined from experimental measurements). \href{run:./resistance1hz.mp4}{Click here} to view an animation of the first few seconds of the flow. At 1 rad/s however, the variation is barely visible. \href{run:./resistance500hz.mp4}{Click here} to view the animation for a higher frequency (500 rad/s). The use of lumped boundary condition resulted artificial reflection. The propagation of the reflected wave is clearly seen in the animation.\\~\\
+It is interesting to note how the flow rate varies as frequency increases. At very high frequencies, the variation in the duct is very small compared to the input. This decrease in amplitude, called Windkessel effect was explained by the fluid structure interaction of flow with a deformable duct. \href{run:./resistance1000hz.mp4}{Click here} to view the animation for a higher frequency at which the Windkessel effect is clearly seen. The pressure vs flow rate plot parametrised by time has been included below. The four locations shown are at 0, L/4, 3L/4 and L. The plotting is not done at steady state because the time taken to reach steady state was too high and it wasn't feasible for me do it on my machine. However, the plots are comparable to those in Olufsen's paper. I believe the same results will be obtained if the inflow condition is matched with the one used by Olufsen and if I run the code for a longer duration.
+\includegraphics[width=\textwidth]{pressure_outflow1}
+
+\end{document}
